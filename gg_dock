@@ -1,0 +1,193 @@
+const axios = require('axios');
+const NodeCache = require('node-cache');
+const tokenCache = new NodeCache();
+
+/**
+ * Função para obter um novo token da API.
+ */
+async function getNewToken() {
+  // Substitua esta URL pela URL da sua API
+  const url = 'https://sua-api.com/token';
+
+  try {
+    const response = await axios.get(url);
+    return response.data.token; // Ajuste isso conforme a resposta da sua API
+  } catch (error) {
+    console.error('Erro ao obter novo token:', error);
+    return null;
+  }
+}
+
+/**
+ * Função para obter o token da API, usando o cache para manter o mesmo token
+ * se ele foi gerado há menos de 3000 segundos.
+ */
+async function getToken() {
+  const cachedToken = tokenCache.get('apiToken');
+
+  if (cachedToken) {
+    return cachedToken;
+  } else {
+    const newToken = await getNewToken();
+
+    if (newToken) {
+      // 3000 segundos de tempo de vida para o token no cache
+      tokenCache.set('apiToken', newToken, 3000);
+    }
+
+    return newToken;
+  }
+}
+
+module.exports = getToken;
+
+
+
+
+  const getToken = require('./apiTokenManager');
+
+async function main() {
+  const token = await getToken();
+  console.log('Token:', token);
+}
+
+main();
+
+
+===============================
+
+const moment = require('moment');
+
+function getPreviousMonthDates() {
+    // Obtém a data atual e subtrai um mês
+    const previousMonth = moment().subtract(1, 'months');
+
+    // Primeiro dia do mês anterior
+    const firstDayPreviousMonth = previousMonth.startOf('month').format('YYYY-MM-DD');
+
+    // Último dia do mês anterior
+    const lastDayPreviousMonth = previousMonth.endOf('month').format('YYYY-MM-DD');
+
+    return {
+        firstDay: firstDayPreviousMonth,
+        lastDay: lastDayPreviousMonth
+    };
+}
+
+module.exports = getPreviousMonthDates;
+
+
+
+const getPreviousMonthDates = require('./previousMonthDates');
+
+const dates = getPreviousMonthDates();
+console.log(dates); // { firstDay: 'YYYY-MM-DD', lastDay: 'YYYY-MM-DD' }
+
+
+
+const moment = require('moment');
+
+function getDaysOfPreviousMonth() {
+    // Array para armazenar os dias
+    let days = [];
+
+    // Obtém o primeiro dia do mês anterior
+    let date = moment().subtract(1, 'months').startOf('month');
+
+    // Obtém o último dia do mês anterior
+    const endOfMonth = date.clone().endOf('month');
+
+    // Itera sobre todos os dias do mês anterior
+    while (date.isSameOrBefore(endOfMonth)) {
+        days.push(date.format('YYYY-MM-DD'));
+        date.add(1, 'days');
+    }
+
+    return days;
+}
+
+module.exports = getDaysOfPreviousMonth;
+
+
+
+
+====================================
+
+const axios = require('axios');
+
+/**
+ * Faz uma chamada GET para a URL fornecida com o token Bearer fornecido.
+ * @param {string} url - A URL para a chamada GET.
+ * @param {string} token - O token Bearer para autenticação.
+ * @returns {Promise} - Uma Promise com a resposta da chamada GET.
+ */
+async function fetchData(url, token) {
+    try {
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Erro ao realizar a chamada GET:', error);
+        throw error;
+    }
+}
+
+module.exports = fetchData;
+
+
+const fetchData = require('./fetchData');
+
+const url = 'https://sua-api.com/endpoint';
+const token = 'seu-token-bearer';
+
+fetchData(url, token)
+    .then(data => {
+        console.log('Dados recebidos:', data);
+    })
+    .catch(error => {
+        console.error('Erro ao obter dados:', error);
+    });
+
+
+
+==========================================
+
+
+
+const schedule = require('node-schedule');
+
+/**
+ * Função que será executada pelo job.
+ */
+function executeJob() {
+    console.log('Job executado:', new Date().toString());
+    // Adicione aqui a lógica que deve ser executada pelo job
+}
+
+/**
+ * Agenda o job para ser executado todo dia 1 do mês às 01:00:00.
+ */
+function scheduleMonthlyJob() {
+    const rule = new schedule.RecurrenceRule();
+    rule.date = 1;
+    rule.hour = 1;
+    rule.minute = 0;
+    rule.second = 0;
+
+    schedule.scheduleJob(rule, executeJob);
+    console.log('Job agendado para todo dia 1 do mês às 01:00:00');
+}
+
+module.exports = scheduleMonthlyJob;
+
+
+
+
+const scheduleMonthlyJob = require('./monthlyJob');
+
+scheduleMonthlyJob();
+
+
